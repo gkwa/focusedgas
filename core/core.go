@@ -1,6 +1,9 @@
 package core
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/go-logr/logr"
 	openbao "github.com/hashicorp/vault/api"
 )
@@ -21,16 +24,48 @@ func Hello(logger logr.Logger) {
 
 	client.SetToken("dev-only-token")
 
-	// Example: Write a secret to OpenBao
+	// Step 4: Store a secret
 	secretData := map[string]interface{}{
-		"foo": "bar",
+		"password": "OpenBao123",
 	}
-	_, err = client.Logical().Write("secret/data/my-secret", secretData)
+
+	_, err = client.KVv2("secret").Put(context.Background(), "my-secret-password", secretData)
 	if err != nil {
-		logger.Error(err, "Failed to write secret to OpenBao")
-	} else {
-		logger.Info("Successfully wrote secret to OpenBao")
+		logger.Error(err, "Unable to write secret")
+		return
 	}
+
+	logger.Info("Secret written successfully.")
+
+	// Step 5: Retrieve a secret
+	secret, err := client.KVv2("secret").Get(context.Background(), "my-secret-password")
+	if err != nil {
+		logger.Error(err, "Unable to read secret")
+		return
+	}
+
+	value, ok := secret.Data["password"].(string)
+	if !ok {
+		logger.Error(
+			fmt.Errorf(
+				"value type assertion failed: %T %#v",
+				secret.Data["password"],
+				secret.Data["password"],
+			),
+			"Type assertion failed",
+		)
+		return
+	}
+
+	if value != "OpenBao123" {
+		logger.Error(
+			fmt.Errorf("unexpected password value %q retrieved from openbao", value),
+			"Unexpected password value",
+		)
+		return
+	}
+
+	logger.Info("Access granted!")
 
 	logger.V(1).Info("Debug: Exiting Hello function")
 }
