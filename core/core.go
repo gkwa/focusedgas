@@ -2,6 +2,7 @@ package core
 
 import (
 	"github.com/go-logr/logr"
+	openbao "github.com/openbao/openbao/api"
 )
 
 func Hello(logger logr.Logger) {
