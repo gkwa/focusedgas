@@ -74,4 +74,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
 
-replace github.com/hashicorp/vault => github.com/openbao/openbao v1.12.2
+replace github.com/hashicorp/vault => github.com/openbao/openbao v1.15.5
